@@ -59,17 +59,22 @@ public class RequestHandler extends Thread {
 				User user = new User(params.get("userId"), params.get("pasword"), params.get("name"),
 						params.get("email"));
 				log.debug("User : {}", user);
-				url = "/index.html";
+				
+				DataOutputStream dos = new DataOutputStream(out);
+				response302Header(dos);
 			}
 			/*
 			 * 요구사항 1번 log.debug("request line : {}",line); if(line==null)return; String[]
 			 * tokens=line.split(" "); while(!line.equals("")) { line=br.readLine();
 			 * log.debug("header : {}",line); }
 			 */
-			DataOutputStream dos = new DataOutputStream(out);
-			byte[] body = Files.readAllBytes(new File("./webapp" + url).toPath());
-			response200Header(dos, body.length);
-			responseBody(dos, body);
+			else {
+				DataOutputStream dos = new DataOutputStream(out);
+				byte[] body = Files.readAllBytes(new File("./webapp" + url).toPath());
+				response200Header(dos, body.length);
+				responseBody(dos, body);
+			}
+			
 		} catch (IOException e) {
 			log.error(e.getMessage());
 		}
@@ -85,7 +90,15 @@ public class RequestHandler extends Thread {
 			log.error(e.getMessage());
 		}
 	}
-
+	private void response302Header(DataOutputStream dos) {
+		try {
+			dos.writeBytes("HTTP/1.1 302 Found \r\n");
+			dos.writeBytes("Location: /index.html\r\n");
+			dos.writeBytes("\r\n");
+		} catch (IOException e) {
+			log.error(e.getMessage());
+		}
+	}
 	private void responseBody(DataOutputStream dos, byte[] body) {
 		try {
 			dos.write(body, 0, body.length);
